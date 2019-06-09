@@ -7,17 +7,33 @@ app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
+var userlist = [];
+
 io.on('connection', function(socket){
+  var room = '';
   console.log('a user connected');
-  socket.broadcast.emit('hi');
+  //socket.broadcast.emit('hi');
+  
+  userlist.push(socket);
+  console.log(userlist);
+  
+  socket.on('client_to_server_join', function(data) {
+    room = data.value;
+    socket.join(room);
+    console.log("join room :" + room);
+  });
 
   socket.on('disconnect', function(){
     console.log('user disconnected');
+    var pos = userlist.indexOf(socket)
+    userlist.splice(pos,1)
+    console.log(userlist)
   });
 
   socket.on('chat message', function(msg){
     console.log('message: ' + msg);
-    io.emit('chat message', msg);
+    //io.emit('chat message', msg);
+    io.to(room).emit('chat message', msg);
   });
 });
 

@@ -20,6 +20,10 @@
 <body>
     <ul id="messages"></ul>
     <form action="">
+        <select class="form-control" id="rooms">
+            <option value="room01">部屋01</option>
+            <option value="room02">部屋02</option>
+        </select>
         <input id="m" autocomplete="off" /><button>Send</button>
     </form>
     <ul id="messages"></ul>
@@ -27,25 +31,29 @@
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
         $(function () {
+            //var socket = io('/client_name_spaceA'); //namespace
+            //var socket = io.connect();
             var socket = io();
+            var isEnter = false;
+
+            socket.on('chat message', function (msg) {
+                $('#messages').append($('<li>').text(msg));
+            });
+
             $('form').submit(function (e) {
+                
+                if(!isEnter){
+                    var selectRoom = $("#rooms").val();
+                    socket.emit("client_to_server_join", {value : selectRoom});
+                    isEnter = true;
+                }
+
                 e.preventDefault(); // prevents page reloading
                 socket.emit('chat message', $('#m').val());
                 $('#m').val('');
                 return false;
             });
-            socket.on('chat message', function (msg) {
-                $('#messages').append($('<li>').text(msg));
-            });
         });
-
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service_worker.js').then(function (registration) {
-                console.log('ServiceWorker registration successful with scope: ', registration.scope);
-            }).catch(function (err) {
-                console.log('ServiceWorker registration failed: ', err);
-            });
-        }
     </script>
 </body>
 
